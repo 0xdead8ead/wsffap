@@ -60,22 +60,24 @@ class WSBackdoor(WebSocketClient):
 
 class AdminWebsocket(WebSocketClient):
     '''Websocket Manager'''
-    def __addListeners__(self, webSocket):
-            adminListeners.append(webSocket)
+    def __addListeners__(self):
+            adminListeners.append(self)
 
     def opened(self):
         self.send("Hello Server! - From Client Admin Websockets\n")
         print 'adding the socket to adminListeners list'
-        self.__addListeners__(self)
+        self.__addListeners__()
 
     def closed(self, code, reason):
         print "Closed down", code, reason
 
-    def received_message(self, jsonObject):
+    def received_message(self, message):
+        print 'Received Message: %s' % message
+        '''
         print 'RECEIVED ON ADMIN INTERFACE:\n\n %s' % str(jsonObject)
         processor = jsonObjectProccessor()
         processor.processObject(jsonObject)
-
+        '''
 
 class jsonObjectProccessor():
     '''Process Json Command Objects'''
@@ -121,14 +123,14 @@ if __name__ == '__main__':
     print 'Hostname: %s' % hostname
     try:
         adminWebsocket = AdminWebsocket('http://' + options.ip + ':' + options.port + '/endpoint/admin/%s/%s/6faf6300-7318-11e1-b0c4-0800200c9a66' % (hostname, platform), protocols=['http-only', 'chat'])
-        adminWebsocket.daemon = True
+        adminWebsocket.daemon = False
         adminWebsocket.connect()
         '''Remove below statement'''
         #adminWebsocket.addListeners(adminWebsocket)
     except KeyboardInterrupt:
         for socket in adminListeners:
             print 'socket being closed on client side...shit'
-            socket.close()
+            adminWebsocket.close()
 
-        for socket in listeners:
+        for socket in adminListeners:
             socket.close()

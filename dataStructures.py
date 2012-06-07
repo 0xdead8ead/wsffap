@@ -51,4 +51,20 @@ class CommandSocketObject():
         return self.username
 
 
+class CommandDataObject():
+    '''Command Data Object'''
+    def __init__(self, boxUUID, hostname, platform, username, command)
+        self.uuid = boxUUID
+        self.platform = platform
+        self.hostname = hostname
+        self.username = username
+        self.command = command
+
+    def createJSONObject():
+        pythonDictionaryObject = {'uuid':self.uuid,'hostname':self.hostname,
+         'platform':self.platform,'username':self.username,'command':self.command}
+
+        jsonObject = json.dumps(pythonDictionaryObject)
+
+
 

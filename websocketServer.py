@@ -82,6 +82,7 @@ class DistributeHandler(tornado.websocket.WebSocketHandler):
         self.name = name or 'anonymous'
         """
         self.__saveWebSocket__()
+        self.write_message('Hello FROM Server')
         print '%s:CONNECT to %s from %s' % (time.time(), self.type, self.hostname)
 
     def on_message(self, message):
@@ -97,13 +98,17 @@ class DistributeHandler(tornado.websocket.WebSocketHandler):
         ''' Closes out regular sockets... needs to be addapted for adminObject Structure'''
         #FIXME - READ ABOVE COMMENT!!!\
         print 'CLOSE SOCKET CALLED BY SERVER!!!!! FUCKKK!K!K!'
-        if self.group in listeners:
-            listeners[self.group].remove(self)
+        if self.uuid in adminListeners:
+            #adminListeners[self.uuid].remove(self)
+            del adminListeners[self.uuid]
+        '''
+        ###DELETE THIS SHIT!!!###
         del names[self]
         # notify clients that a member has left the groups
         for client in listeners.get(self.group, []):
             client.write_message('-' + self.name)
-        print '%s:DISCONNECT from %s' % (time.time(), self.group)
+        '''
+        print '%s:DISCONNECT from %s' % (time.time(), self.hostname)
 
     def __getParameters__(self, params):
         print 'Parameters: %s' % str(params)
@@ -129,10 +134,9 @@ class DistributeHandler(tornado.websocket.WebSocketHandler):
 
         '''THIS IS A CLUSTERFUCK.... CLEAN IT UP!!!!'''
         if self.type == 'admin':
-            '''CURRENTLY Appends just the Websocket, It should append the entire adminObject'''
-            #FIXME - READ ABOVE COMMENT!!!!!
+            print 'Made it to AdminSocketCreation\n\n'
             newAdminSocketObject = AdminSocketObject(self.uuid, self.hostname, self.platform, self)
-            adminListeners[self.uuid].append(newAdminSocketObject)
+            adminListeners[self.uuid] = newAdminSocketObject
         elif self.type == 'command':
             listeners[group].append(commandStructureObject(self.uuid, self.name, self))
         else:
@@ -141,7 +145,7 @@ class DistributeHandler(tornado.websocket.WebSocketHandler):
                 client.write_message('+' + self.name)
             #Append Websocket instance to group
             listeners[self.group].append(self)
-        names[self] = self.name
+        #names[self] = self.name
 
 
 
