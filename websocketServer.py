@@ -7,12 +7,12 @@ import tornado.web
 import time
 import optparse
 import json
-from dataStructures import AdminSocketObject, CommandSocketObject
+from dataStructures import AdminSocketObject, CommandSocketObject, CommandDataObject
 
 
 __author__ = "f47h3r - Chase Schultz"
 
-listeners = {}
+clientListeners = {}
 adminListeners = {}
 names = {}
 
@@ -53,17 +53,12 @@ class SpawnClientSocket(tornado.web.RequestHandler):
     def post(self):
         user = self.request.arguments['user'][0]
 
-        #construct JSON Object
-        data = [{'command':'spawnwebsocket', 'user':user}]
-        jsonObject = json.dumps(data)
-
-        for client in listeners.get('admin', ['default']):
-            websocket = client.webSocket
-            websocket.write_message(jsonObject)
-        #websocket = listeners.get('admin',['default'])[0].webSocket
-
-        #print 'THE WEBSOCKET = \n\n'
-        #print websocket
+        for adminSocket in adminListeners:
+            commandObject = CommandDataObject(adminListeners[adminSocket].getUUID(), adminListeners[adminSocket].getHostname(), adminListeners[adminSocket].getPlatform(), user, 'spawnclientsocket', '')
+            jsonCommandObject = commandObject.createJSONObject()
+            print 'JSON COMMAND OBJECT: %s' % jsonCommandObject
+            socketInstance = adminListeners[adminSocket].getWebSocket()
+            socketInstance.write_message(jsonCommandObject)
 
         return 'true'
 
@@ -82,7 +77,6 @@ class DistributeHandler(tornado.websocket.WebSocketHandler):
         self.name = name or 'anonymous'
         """
         self.__saveWebSocket__()
-        self.write_message('Hello FROM Server')
         print '%s:CONNECT to %s from %s' % (time.time(), self.type, self.hostname)
 
     def on_message(self, message):
@@ -101,13 +95,6 @@ class DistributeHandler(tornado.websocket.WebSocketHandler):
         if self.uuid in adminListeners:
             #adminListeners[self.uuid].remove(self)
             del adminListeners[self.uuid]
-        '''
-        ###DELETE THIS SHIT!!!###
-        del names[self]
-        # notify clients that a member has left the groups
-        for client in listeners.get(self.group, []):
-            client.write_message('-' + self.name)
-        '''
         print '%s:DISCONNECT from %s' % (time.time(), self.hostname)
 
     def __getParameters__(self, params):
@@ -129,26 +116,14 @@ class DistributeHandler(tornado.websocket.WebSocketHandler):
 
     def __saveWebSocket__(self):
         #If group isn't already in the list add it.
-        if not self.type in listeners:
-            listeners[self.type] = []
-
         '''THIS IS A CLUSTERFUCK.... CLEAN IT UP!!!!'''
         if self.type == 'admin':
             print 'Made it to AdminSocketCreation\n\n'
             newAdminSocketObject = AdminSocketObject(self.uuid, self.hostname, self.platform, self)
             adminListeners[self.uuid] = newAdminSocketObject
         elif self.type == 'command':
-            listeners[group].append(commandStructureObject(self.uuid, self.name, self))
-        else:
-            # notify clients that a member has joined the groups
-            for client in listeners.get(self.group, []):
-                client.write_message('+' + self.name)
-            #Append Websocket instance to group
-            listeners[self.group].append(self)
-        #names[self] = self.name
-
-
-
+            newCommandSocketObject = CommandSocketObject(self.uuid, self.hostname, self.platform, self.username, self)
+            clientListeners[self.uuid] = newCommandSocketObject
 
 
 '''

