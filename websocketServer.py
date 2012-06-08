@@ -14,6 +14,7 @@ __author__ = "f47h3r - Chase Schultz"
 
 clientListeners = {}
 adminListeners = {}
+shellListeners = {}
 names = {}
 
 
@@ -111,6 +112,13 @@ class DistributeHandler(tornado.websocket.WebSocketHandler):
             self.platform = params[2]
             self.uuid = params[3]
             self.username = params[4]
+        elif params[0] == 'shellpipe':
+            self.type = params[0]
+            self.hostname = params[1]
+            self.platform = params[2]
+            self.uuid = params[3]
+            self.username = params[4]
+
         else:
             print 'Unable to Obtain Parameters'
 
@@ -124,7 +132,9 @@ class DistributeHandler(tornado.websocket.WebSocketHandler):
         elif self.type == 'command':
             newCommandSocketObject = CommandSocketObject(self.uuid, self.hostname, self.platform, self.username, self)
             clientListeners[self.uuid] = newCommandSocketObject
-
+        elif self.type == 'shellpipe'
+            newCommandSocketObject = CommandSocketObject(self.uuid, self.hostname, self.platform, self.username, self)
+            shellListeners[self.uuid] = newCommandSocketObject
 
 '''
 
