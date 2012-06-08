@@ -11,7 +11,7 @@ __author__ = "f47h3r - Chase Schultz"
 class runTime():
 
     def sendCommand(self, url, message, group='boxes'):
-        params = urllib.urlencode({'message': message, 'group': group})
+        params = urllib.urlencode({'message': message, 'username': 'f47h3r'})
         try:
             f = urllib.urlopen(url, params)
         except IOError:
